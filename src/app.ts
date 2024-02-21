@@ -273,8 +273,6 @@ export async function BridgeToPrime() {
     await testerBatchingToPrime()
 }
 
-
-// runExample("", "")
 async function test() {
     require('dotenv').config();
 
@@ -283,4 +281,4 @@ async function test() {
     await BridgeToPrime()
 }
 
-test()
+//test()
