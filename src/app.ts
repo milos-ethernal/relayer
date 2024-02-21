@@ -15,13 +15,13 @@ export async function CreateTx(originChain: string, address: string, receiver: s
     // }
     const enterpriseAddress = EnterpriseAddress.from_address(senderAddress);
     if (!enterpriseAddress) {
-        console.error("error while creating sender enterprise address")
+        console.log("error while creating sender enterprise address")
         return;
     }
 
     const pubKeyHash = enterpriseAddress.payment_cred().to_keyhash();
     if (!pubKeyHash) {
-        console.error("error while creating sender pub key hash")
+        console.log("error while creating sender pub key hash")
         return
     }
 
