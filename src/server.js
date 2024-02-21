@@ -49,72 +49,95 @@ if (!PORT) {
 app.use(express.json());
 // Define a route for GET requests
 app.post('/api/createAndSignBridgingTx', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var privKey, senderAddress, receiverAddress, amount, originChain, destinationChain, unsignedTx, signedTx, submitResult;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
+    var _a, priv_key, sender_address, recv_address, amount, chainId, originChain, destinationChain, unsignedTx, signedTx, submitResult, error_1;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
             case 0:
-                privKey = req.body["priv_key"];
-                senderAddress = req.body["sender_address"];
-                receiverAddress = req.body["recv_address"];
-                amount = req.body["amount"];
-                originChain = req.body["chainId"];
-                destinationChain = "";
-                if (originChain == "prime")
-                    destinationChain = "vector";
-                else
-                    destinationChain = "prime";
-                return [4 /*yield*/, (0, app_1.CreateTx)(originChain, senderAddress, receiverAddress, amount, destinationChain)];
-            case 1:
-                unsignedTx = _a.sent();
-                if (!unsignedTx) {
-                    res.json({ message: 'Error while creating bridging transaction' });
+                _a = req.body, priv_key = _a.priv_key, sender_address = _a.sender_address, recv_address = _a.recv_address, amount = _a.amount, chainId = _a.chainId;
+                if (!priv_key || !sender_address || !recv_address || !amount || !chainId) {
+                    res.status(400).json({ error: 'Missing required fields in request body' });
                     return [2 /*return*/];
                 }
-                return [4 /*yield*/, (0, app_1.SignTransaction)(privKey, unsignedTx)];
+                originChain = chainId.toLowerCase();
+                if (originChain !== 'prime' && originChain !== 'vector') {
+                    res.status(400).json({ error: 'Invalid chainId value' });
+                    return [2 /*return*/];
+                }
+                destinationChain = originChain === 'prime' ? 'vector' : 'prime';
+                _b.label = 1;
+            case 1:
+                _b.trys.push([1, 5, , 6]);
+                return [4 /*yield*/, (0, app_1.CreateTx)(originChain, sender_address, recv_address, amount, destinationChain)];
             case 2:
-                signedTx = _a.sent();
-                return [4 /*yield*/, (0, ogmios_1.SubmitTransaction)(originChain, signedTx)];
+                unsignedTx = _b.sent();
+                if (!unsignedTx) {
+                    res.status(500).json({ error: 'Error while creating transaction' });
+                    return [2 /*return*/];
+                }
+                return [4 /*yield*/, (0, app_1.SignTransaction)(priv_key, unsignedTx)];
             case 3:
-                submitResult = _a.sent();
+                signedTx = _b.sent();
+                return [4 /*yield*/, (0, ogmios_1.SubmitTransaction)(originChain, signedTx)];
+            case 4:
+                submitResult = _b.sent();
                 res.json({ message: submitResult });
-                return [2 /*return*/];
+                return [3 /*break*/, 6];
+            case 5:
+                error_1 = _b.sent();
+                console.error('Error while processing transaction:', error_1);
+                res.status(500).json({ error: 'Error while processing transaction' });
+                return [3 /*break*/, 6];
+            case 6: return [2 /*return*/];
         }
     });
 }); });
 // Define a route for POST requests
 app.post('/api/createAndSignBatchingTx', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var originChain, senderAddress, privKey, receiverAddress, amount, unsignedTx, signedTx, submitResult;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
+    var _a, chainId, recv_addr, amount, originChain, senderAddress, privKey, unsignedTx, signedTx, submitResult, error_2;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
             case 0:
-                originChain = req.body["chainId"];
-                senderAddress = originChain === "prime" ? process.env.MULTISIG_ADDRESS_PRIME : process.env.MULTISIG_ADDRESS_VECTOR;
-                if (!senderAddress) {
-                    res.json({ message: 'Error multisig address not set in env' });
+                _a = req.body, chainId = _a.chainId, recv_addr = _a.recv_addr, amount = _a.amount;
+                if (!chainId || !recv_addr || !amount) {
+                    res.status(400).json({ error: 'Missing required fields in request body' });
                     return [2 /*return*/];
                 }
-                privKey = originChain === "prime" ? process.env.MULTISIG_PK_PRIME : process.env.MULTISIG_PK_VECTOR;
-                if (!privKey) {
-                    res.json({ message: 'Error multisig pk not set in env' });
+                originChain = chainId.toLowerCase();
+                if (originChain !== 'prime' && originChain !== 'vector') {
+                    res.status(400).json({ error: 'Invalid chainId value' });
                     return [2 /*return*/];
                 }
-                receiverAddress = req.body["recv_addr"];
-                amount = req.body["amount"];
-                return [4 /*yield*/, (0, app_1.CreateTx)(originChain, senderAddress, receiverAddress, amount, undefined)];
+                senderAddress = chainId === "prime" ? process.env.MULTISIG_ADDRESS_PRIME : process.env.MULTISIG_ADDRESS_VECTOR;
+                privKey = chainId === "prime" ? process.env.MULTISIG_PK_PRIME : process.env.MULTISIG_PK_VECTOR;
+                // Check if senderAddress and privKey are set in environment variables
+                if (!senderAddress || !privKey) {
+                    res.status(500).json({ error: 'Multisig address or private key not set in environment variables' });
+                    return [2 /*return*/];
+                }
+                _b.label = 1;
             case 1:
-                unsignedTx = _a.sent();
+                _b.trys.push([1, 5, , 6]);
+                return [4 /*yield*/, (0, app_1.CreateTx)(originChain, senderAddress, recv_addr, amount, undefined)];
+            case 2:
+                unsignedTx = _b.sent();
                 if (!unsignedTx) {
-                    res.json({ message: 'Error while creating bridging transaction' });
+                    res.status(500).json({ error: 'Error while creating transaction' });
                     return [2 /*return*/];
                 }
                 return [4 /*yield*/, (0, app_1.SignTransaction)(privKey, unsignedTx)];
-            case 2:
-                signedTx = _a.sent();
-                return [4 /*yield*/, (0, ogmios_1.SubmitTransaction)(originChain, signedTx)];
             case 3:
-                submitResult = _a.sent();
+                signedTx = _b.sent();
+                return [4 /*yield*/, (0, ogmios_1.SubmitTransaction)(originChain, signedTx)];
+            case 4:
+                submitResult = _b.sent();
                 res.json({ message: submitResult });
-                return [2 /*return*/];
+                return [3 /*break*/, 6];
+            case 5:
+                error_2 = _b.sent();
+                console.error('Error while processing transaction:', error_2);
+                res.status(500).json({ error: 'Error while processing transaction' });
+                return [3 /*break*/, 6];
+            case 6: return [2 /*return*/];
         }
     });
 }); });

@@ -7,8 +7,8 @@ export async function GetTransactionBuilder(chainId: string) {
 
     let linearFee = LinearFee.new(BigNum.from_str(protocolParams.minFeeCoefficient.toString()), BigNum.from_str(protocolParams.minFeeConstant.ada.lovelace.toString()))
 
-    if (protocolParams.maxValueSize === undefined || protocolParams.maxTransactionSize === undefined) {
-        console.error("handle")
+    if (!protocolParams.maxValueSize || !protocolParams.maxTransactionSize) {
+        console.error("Error in maxValueSize = " + protocolParams.maxValueSize + ", maxTransactionSize = ", protocolParams.maxTransactionSize)
     }
     let max_value_size = protocolParams.maxValueSize !== undefined ? protocolParams.maxValueSize.bytes : 0;
     let max_tx_size = protocolParams.maxTransactionSize !== undefined ? protocolParams.maxTransactionSize.bytes : 0;
@@ -53,7 +53,7 @@ export async function GetUtxos(chainId: string, address: string, amount: number)
     }
 
     if (amount_sum < amount + potentialFee + minUtxoValue) {
-        console.error("no enough avaialble funds for generating transaction " + amount_sum + " available but " + amount + potentialFee + minUtxoValue + " needed.")
+        console.error("no enough avaialble funds for generating transaction " + amount_sum + " available but " + (amount + potentialFee + minUtxoValue) + " needed.")
     }
 
     return retVal

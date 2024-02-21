@@ -51,12 +51,12 @@ function CreateTx(originChain, address, receiver, amount, destinationChain) {
                     senderAddress = cardano_serialization_lib_nodejs_1.Address.from_bech32(address);
                     enterpriseAddress = cardano_serialization_lib_nodejs_1.EnterpriseAddress.from_address(senderAddress);
                     if (!enterpriseAddress) {
-                        console.error("error while creating sender enterprise address");
+                        console.log("error while creating sender enterprise address");
                         return [2 /*return*/];
                     }
                     pubKeyHash = enterpriseAddress.payment_cred().to_keyhash();
                     if (!pubKeyHash) {
-                        console.error("error while creating sender pub key hash");
+                        console.log("error while creating sender pub key hash");
                         return [2 /*return*/];
                     }
                     return [4 /*yield*/, (0, helper_1.GetUtxos)(originChain, address, amount)];
@@ -343,7 +343,6 @@ function BridgeToPrime() {
     });
 }
 exports.BridgeToPrime = BridgeToPrime;
-// runExample("", "")
 function test() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
@@ -364,4 +363,4 @@ function test() {
         });
     });
 }
-test();
+//test()
